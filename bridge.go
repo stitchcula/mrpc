@@ -1,7 +1,6 @@
 package mrpc
 
 import (
-	"bytes"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"google.golang.org/grpc"
 	"io"
@@ -32,12 +31,8 @@ func NewBridge(clt mqtt.Client) grpc.StreamServerInterceptor {
 		ch := make(chan error)
 		defer close(ch)
 
-		resp := "/mrpc/response" + info.FullMethod + sid
+		resp := DefaultResponsePrefix + info.FullMethod + sid
 		if t := clt.Subscribe(resp, 0, func(_ mqtt.Client, msg mqtt.Message) {
-			if bytes.Equal(EOF, msg.Payload()) {
-				ch <- nil
-				return
-			}
 			if err := ss.SendMsg(OriginalProto{data: msg.Payload()}); err != nil {
 				ch <- err
 			}
@@ -48,7 +43,7 @@ func NewBridge(clt mqtt.Client) grpc.StreamServerInterceptor {
 		defer clt.Unsubscribe(resp)
 
 		go func() {
-			reqs := "/mrpc/request" + info.FullMethod + sid
+			reqs := DefaultRequestPrefix + info.FullMethod + sid
 			rx := &OriginalProto{}
 			defer clt.Publish(reqs, 0, false, EOF)
 			for {

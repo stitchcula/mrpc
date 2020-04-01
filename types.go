@@ -5,7 +5,21 @@ import (
 	"context"
 	"fmt"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"google.golang.org/grpc"
 	"time"
+)
+
+type (
+	MethodDesc  = grpc.MethodDesc
+	StreamDesc  = grpc.StreamDesc
+	ServiceDesc = grpc.ServiceDesc
+	ServiceInfo = grpc.ServiceInfo
+	MethodInfo  = grpc.MethodInfo
+)
+
+const (
+	DefaultRequestPrefix  = "/mrpc/request"
+	DefaultResponsePrefix = "/mrpc/response"
 )
 
 func WaitContext(ctx context.Context, token mqtt.Token) bool {
